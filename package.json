@@ -1,0 +1,23 @@
+{
+  "name": "invoicetosheet-ai",
+  "version": "1.0.0",
+  "description": "InvoiceToSheet AI - SaaS tool for invoice processing",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "cd backend && pip install -r requirements.txt && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "invoice",
+    "ai",
+    "supabase",
+    "react",
+    "fastapi"
+  ],
+  "author": "",
+  "license": "MIT"
+}

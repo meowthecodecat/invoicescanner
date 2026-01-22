@@ -56,7 +56,9 @@ class SupabaseDBService:
             
             return None
         except Exception as e:
-            raise Exception(f"Failed to get entreprise_id: {str(e)}")
+            # Table utilisateurs might not exist, return None instead of raising
+            print(f"Warning: Failed to get entreprise_id (table might not exist): {str(e)}")
+            return None
     
     def create_usage_log(
         self,
@@ -110,18 +112,30 @@ class SupabaseDBService:
             processing_time_ms: Processing time in milliseconds
             tokens_used: Number of OpenAI tokens used (optional)
         """
+        # Some Supabase projects use different column names for token usage.
+        # We'll prefer "openai_tokens" and gracefully retry without token fields if the column doesn't exist.
+        update_data: Dict[str, Any] = {
+            "status": "success",
+            "extracted_data": extracted_data,
+            "processing_time_ms": processing_time_ms,
+        }
+
+        if tokens_used is not None:
+            update_data["openai_tokens"] = tokens_used
+
         try:
-            update_data = {
-                "status": "success",
-                "extracted_data": extracted_data,
-                "processing_time_ms": processing_time_ms
-            }
-            
-            if tokens_used:
-                update_data["tokens_used"] = tokens_used
-            
             self.client.table("invoicetosheet_usage_logs").update(update_data).eq("id", log_id).execute()
+            return
         except Exception as e:
+            # If the schema doesn't have openai_tokens (or any token column), retry without it.
+            msg = str(e)
+            if "PGRST204" in msg and ("openai_tokens" in msg or "tokens_used" in msg):
+                update_data.pop("openai_tokens", None)
+                try:
+                    self.client.table("invoicetosheet_usage_logs").update(update_data).eq("id", log_id).execute()
+                    return
+                except Exception as e2:
+                    raise Exception(f"Failed to update usage log: {str(e2)}")
             raise Exception(f"Failed to update usage log: {str(e)}")
     
     def update_usage_log_failed(

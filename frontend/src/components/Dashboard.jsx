@@ -57,7 +57,12 @@ const Dashboard = () => {
 
     setLoading(true)
     try {
-      await updateSheetId(sheetId.trim())
+      // Accept either full URL or raw ID
+      const trimmed = sheetId.trim()
+      const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)
+      const normalized = match?.[1] || trimmed
+      setSheetId(normalized)
+      await updateSheetId(normalized)
       setMessage({ type: 'success', text: 'Sheet ID saved successfully!' })
       loadProfile()
     } catch (error) {
@@ -109,10 +114,16 @@ const Dashboard = () => {
       <header className="dashboard-header">
         <div className="container">
           <div className="header-content">
-            <h1>InvoiceToSheet AI</h1>
+            <div className="header-logo-section">
+              <img src="/logo.svg" alt="Logo" className="header-logo" />
+              <h1>InvoiceToSheet AI</h1>
+            </div>
             <div className="header-actions">
-              <span className="user-email">{user?.email}</span>
-              <button className="btn btn-danger" onClick={handleSignOut}>Sign Out</button>
+              <div className="user-info">
+                <span className="user-avatar">{user?.email?.charAt(0).toUpperCase()}</span>
+                <span className="user-email">{user?.email}</span>
+              </div>
+              <button className="btn btn-danger" onClick={handleSignOut}>Déconnexion</button>
             </div>
           </div>
         </div>
@@ -126,19 +137,28 @@ const Dashboard = () => {
         )}
 
         <div className="card">
-          <h2 className="card-title">Configuration</h2>
+          <h2 className="card-title">
+            <svg className="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Configuration
+          </h2>
           <div className="form-group">
-            <label className="form-label">Target Google Sheet ID</label>
+            <label className="form-label">ID Google Sheet cible</label>
             <input
               type="text"
               className="form-input"
-              placeholder="Enter your Google Sheet ID"
+              placeholder="Entrez votre Google Sheet ID"
               value={sheetId}
               onChange={(e) => setSheetId(e.target.value)}
               disabled={loading}
             />
             <small className="form-help">
-              Find this in your Google Sheet URL: docs.google.com/spreadsheets/d/[SHEET_ID]/edit
+              Trouvez-le dans l'URL de votre Google Sheet : docs.google.com/spreadsheets/d/[SHEET_ID]/edit
             </small>
           </div>
           <button 
@@ -146,28 +166,53 @@ const Dashboard = () => {
             onClick={handleSaveSheetId}
             disabled={loading}
           >
-            {loading ? 'Saving...' : 'Save Sheet ID'}
+            {loading ? (
+              <>
+                <span className="loading"></span>
+                Enregistrement...
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Enregistrer l'ID Sheet
+              </>
+            )}
           </button>
         </div>
 
         {usage && (
           <div className="card">
-            <h2 className="card-title">Usage Statistics</h2>
+            <h2 className="card-title">
+              <svg className="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="20" x2="12" y2="10"></line>
+                <line x1="18" y1="20" x2="18" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="16"></line>
+              </svg>
+              Statistiques d'utilisation
+            </h2>
             <div className="usage-stats">
               <div className="stat-item">
-                <span className="stat-label">Monthly Limit:</span>
+                <div className="stat-icon stat-icon-primary">📊</div>
+                <span className="stat-label">Limite mensuelle</span>
                 <span className="stat-value">{usage.monthly_limit}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Used This Month:</span>
+                <div className="stat-icon stat-icon-success">✅</div>
+                <span className="stat-label">Utilisé ce mois</span>
                 <span className="stat-value">{usage.current_usage}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Remaining:</span>
+                <div className="stat-icon stat-icon-info">📈</div>
+                <span className="stat-label">Restant</span>
                 <span className="stat-value">{usage.remaining}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Failed:</span>
+                <div className="stat-icon stat-icon-warning">⚠️</div>
+                <span className="stat-label">Échecs</span>
                 <span className="stat-value">{usage.failed}</span>
               </div>
             </div>
@@ -175,9 +220,16 @@ const Dashboard = () => {
         )}
 
         <div className="card">
-          <h2 className="card-title">Upload Invoice</h2>
+          <h2 className="card-title">
+            <svg className="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Télécharger une facture
+          </h2>
           <p className="card-subtitle">
-            Drag and drop an invoice file here, or click to select
+            Glissez-déposez un fichier de facture ici, ou cliquez pour sélectionner
           </p>
           <div
             {...getRootProps()}
@@ -185,18 +237,30 @@ const Dashboard = () => {
           >
             <input {...getInputProps()} />
             {processing ? (
-              <div>
+              <div className="dropzone-content">
                 <div className="loading"></div>
-                <p>Processing invoice...</p>
+                <p className="dropzone-text">Traitement de la facture en cours...</p>
               </div>
             ) : isDragActive ? (
-              <p>Drop the invoice file here...</p>
+              <div className="dropzone-content">
+                <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="64" height="64">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p className="dropzone-text">Déposez le fichier ici...</p>
+              </div>
             ) : (
-              <div>
+              <div className="dropzone-content">
+                <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="64" height="64">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
                 <p className="dropzone-text">
-                  <strong>Click to upload</strong> or drag and drop
+                  <strong>Cliquez pour télécharger</strong> ou glissez-déposez
                 </p>
-                <p className="dropzone-hint">PNG, JPG, PDF up to 10MB</p>
+                <p className="dropzone-hint">PNG, JPG, PDF jusqu'à 10MB</p>
               </div>
             )}
           </div>

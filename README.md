@@ -7,7 +7,7 @@ A standalone SaaS tool that extracts invoice data using AI and automatically pop
 - **Frontend**: React + Supabase Auth (Google Provider)
 - **Backend**: FastAPI (Python) - Processing Engine
 - **Database**: Supabase (PostgreSQL)
-- **AI**: OpenAI GPT-4o-mini (JSON Mode)
+- **Extraction**: Local OCR (Tesseract) by default, OpenAI optional
 - **Infrastructure**: Docker Compose for DigitalOcean
 
 ## Features
@@ -25,8 +25,9 @@ A standalone SaaS tool that extracts invoice data using AI and automatically pop
 
 - Docker and Docker Compose
 - Supabase project with Google OAuth configured
-- OpenAI API key
 - Google Cloud project with Sheets API enabled
+- **Optional**: OpenAI API key (only if using `EXTRACTION_BACKEND=openai`)
+- **Local dev (Windows)**: Tesseract OCR installed (see below)
 
 ### Environment Variables
 
@@ -63,6 +64,13 @@ cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
+
+**Note for Windows dev**: If using OCR mode (default), install Tesseract:
+- Download from: https://github.com/UB-Mannheim/tesseract/wiki
+- Or via Chocolatey: `choco install tesseract -y`
+- Add to `.env`: `TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe`
+
+**Production (Docker)**: Tesseract is automatically installed in the Docker image.
 
 ## Project Structure
 

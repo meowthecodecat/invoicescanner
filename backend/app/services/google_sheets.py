@@ -95,8 +95,13 @@ class GoogleSheetsService:
                 body=body
             ).execute()
             
-            # Add header row
-            headers = ["Shop Name", "Date", "Total HT", "Total TTC", "VAT", "Items"]
+            # Add header row with all extracted fields
+            headers = [
+                "Document Type", "Shop Name", "Shop Address", "Shop Phone", "Shop Email",
+                "Customer Name", "Date", "Invoice Number", "Ticket Number",
+                "Total HT", "Total TTC", "VAT Amount", "Validation Error", "Validation Message",
+                "IBAN", "SIRET", "VAT Number", "Items"
+            ]
             self._append_row(spreadsheet_id, tab_name, headers)
             
             return tab_name
@@ -115,7 +120,7 @@ class GoogleSheetsService:
         """
         service = self._get_service()
         
-        range_name = f"{tab_name}!A:F"
+        range_name = f"{tab_name}!A:R"
         body = {
             "values": [row_data]
         }
@@ -131,6 +136,37 @@ class GoogleSheetsService:
         except Exception as e:
             raise Exception(f"Failed to append row to sheet: {str(e)}")
     
+    def _format_items(self, items: list) -> str:
+        """
+        Format items list into a human-readable string.
+        
+        Args:
+            items: List of item dicts with description, quantity, unit_price_ht, total_ht, vat_rate
+            
+        Returns:
+            Formatted string like "Item 1 (qty x price = total), Item 2 (...)"
+        """
+        if not items:
+            return ""
+        
+        formatted_items = []
+        for item in items:
+            desc = item.get("description", "")
+            qty = item.get("quantity") or 0
+            # Support both old and new field names
+            unit_price = item.get("unit_price_ht") or item.get("unit_price") or 0
+            total = item.get("total_ht") or item.get("total") or 0
+            vat_rate = item.get("vat_rate")
+            
+            # Format: "Description (qty x unit_price€ = total€ [VAT rate%])"
+            if vat_rate:
+                formatted_items.append(f"{desc} ({qty} x {unit_price:.2f}€ = {total:.2f}€ [TVA {vat_rate}%])")
+            else:
+                formatted_items.append(f"{desc} ({qty} x {unit_price:.2f}€ = {total:.2f}€)")
+        
+        # Join with newlines for better readability in Google Sheets
+        return "\n".join(formatted_items)
+    
     def write_invoice_data(self, spreadsheet_id: str, invoice_data: Dict[str, Any]) -> str:
         """
         Write invoice data to a new run tab.
@@ -145,16 +181,29 @@ class GoogleSheetsService:
         # Get or create run tab
         tab_name = self.get_or_create_run_tab(spreadsheet_id)
         
-        # Prepare row data
-        items_json = json.dumps(invoice_data.get("items", []), ensure_ascii=False)
+        # Format items as human-readable text
+        items_formatted = self._format_items(invoice_data.get("items", []))
         
+        # Build row with all extracted fields
         row_data = [
+            invoice_data.get("document_type", ""),
             invoice_data.get("shop_name", ""),
+            invoice_data.get("shop_address", ""),
+            invoice_data.get("shop_phone", ""),
+            invoice_data.get("shop_email", ""),
+            invoice_data.get("customer_name", ""),
             invoice_data.get("date", ""),
+            invoice_data.get("invoice_number", ""),
+            invoice_data.get("ticket_number", ""),
             invoice_data.get("total_ht", ""),
             invoice_data.get("total_ttc", ""),
-            invoice_data.get("vat", ""),
-            items_json
+            invoice_data.get("vat_amount", invoice_data.get("vat", "")),  # Support both field names
+            invoice_data.get("validation_error", False),
+            invoice_data.get("validation_message", ""),
+            invoice_data.get("iban", ""),
+            invoice_data.get("siret", ""),
+            invoice_data.get("vat_number", ""),
+            items_formatted
         ]
         
         # Append row

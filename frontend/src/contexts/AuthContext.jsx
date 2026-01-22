@@ -17,7 +17,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('📍 Initial session check:', { session, error })
       setUser(session?.user ?? null)
       setLoading(false)
       if (session?.user) {
@@ -28,7 +29,8 @@ export const AuthProvider = ({ children }) => {
     // Listen for changes on auth state
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('📍 Auth state change:', event, { session })
       setUser(session?.user ?? null)
       if (session?.user) {
         // Handle OAuth callback - save refresh token
@@ -41,15 +43,23 @@ export const AuthProvider = ({ children }) => {
 
   const handleOAuthCallback = async (session) => {
     try {
+      console.log('📍 Full session object:', session)
+      
       // Get provider token and refresh token from session
       // Note: Supabase stores OAuth tokens in session.metadata or session.provider_refresh_token
       // The actual token storage depends on Supabase version
       const refreshToken = session.provider_refresh_token || session.metadata?.provider_refresh_token
       
+      console.log('📍 Refresh token found:', refreshToken ? 'Yes' : 'No')
+      
       if (refreshToken && session.user?.email) {
+        console.log('📍 Saving refresh token to backend...')
         // Save refresh token to backend
         const { saveRefreshToken } = await import('../lib/api')
         await saveRefreshToken(refreshToken, session.user.email)
+        console.log('📍 Refresh token saved successfully')
+      } else {
+        console.log('📍 No refresh token available or no user email')
       }
     } catch (error) {
       console.error('Error saving refresh token:', error)

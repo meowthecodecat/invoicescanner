@@ -1,0 +1,68 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient pour l'hexagone -->
+    <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B4A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#E63946;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B1538;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradient pour la tête du red panda -->
+    <radialGradient id="headGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#FF8C69;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC2F47;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Gradient pour la queue -->
+    <linearGradient id="tailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B4A;stop-opacity:1" />
+      <stop offset="33%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="66%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Hexagone -->
+  <polygon 
+    points="60,10 100,30 100,70 60,90 20,70 20,30" 
+    fill="none" 
+    stroke="url(#hexGradient)" 
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Queue avec rayures -->
+  <g transform="translate(75, 40) rotate(-15)">
+    <rect x="0" y="0" width="25" height="8" fill="url(#tailGradient)" rx="4"/>
+    <rect x="0" y="0" width="25" height="3" fill="#FF6B4A"/>
+    <rect x="0" y="5" width="25" height="3" fill="#FFA500"/>
+  </g>
+  
+  <!-- Corps/Tête du red panda -->
+  <ellipse cx="60" cy="55" rx="35" ry="40" fill="url(#headGradient)" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Oreilles -->
+  <ellipse cx="48" cy="30" rx="8" ry="12" fill="#F0F0F0" stroke="#1a1a1a" stroke-width="2"/>
+  <ellipse cx="72" cy="30" rx="8" ry="12" fill="#F0F0F0" stroke="#1a1a1a" stroke-width="2"/>
+  <ellipse cx="48" cy="30" rx="5" ry="7" fill="#1a1a1a"/>
+  <ellipse cx="72" cy="30" rx="5" ry="7" fill="#1a1a1a"/>
+  
+  <!-- Zones blanches faciales -->
+  <path d="M 45 45 Q 45 50, 50 52 Q 45 55, 45 60" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="1.5"/>
+  <path d="M 75 45 Q 75 50, 70 52 Q 75 55, 75 60" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="1.5"/>
+  
+  <!-- Yeux -->
+  <circle cx="50" cy="50" r="4" fill="#1a1a1a"/>
+  <circle cx="70" cy="50" r="4" fill="#1a1a1a"/>
+  <circle cx="51" cy="49" r="1.5" fill="#FFFFFF"/>
+  <circle cx="71" cy="49" r="1.5" fill="#FFFFFF"/>
+  
+  <!-- Nez -->
+  <path d="M 58 60 L 62 60 L 60 64 Z" fill="#1a1a1a"/>
+  <ellipse cx="60" cy="61" rx="1" ry="1" fill="#FFFFFF"/>
+  
+  <!-- Bouche -->
+  <path d="M 60 64 Q 55 67, 50 66" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 60 64 Q 65 67, 70 66" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>
